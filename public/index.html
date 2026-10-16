@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d1b31">
+  <meta name="description" content="OrganBridge: a synthetic-data transplant coordination and kidney preliminary screening educational demonstration.">
+  <link rel="icon" type="image/svg+xml" href="/logo.svg">
+  <title>OrganBridge • Coordination Console</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Main navigation">
+      <div class="brand"><img class="brand-logo" src="/logo.svg" alt="OrganBridge bridge and medical cross logo" width="46" height="46"><div><strong>OrganBridge</strong><span>COORDINATION CLOUD</span></div></div>
+      <div class="workspace-title">WORKSPACE</div>
+      <nav class="nav" id="sidebar-nav">
+        <button type="button" class="nav-item active" data-route="dashboard"><span class="nav-symbol">◫</span> Overview</button>
+        <button type="button" class="nav-item" data-route="matching"><span class="nav-symbol">⌘</span> Matching workspace <span class="nav-new">NEW</span></button>
+        <button type="button" class="nav-item" data-route="registry"><span class="nav-symbol">▤</span> Donor registry</button>
+        <button type="button" class="nav-item" data-route="waiting"><span class="nav-symbol">♧</span> Waiting list</button>
+        <button type="button" class="nav-item" data-route="audit"><span class="nav-symbol">◷</span> Audit trail</button>
+      </nav>
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-info"><span class="info-icon">ⓘ</span><div><strong>Learning environment</strong><p>Public hospital listings; fictional clinical scenarios. No organ allocations.</p></div></div>
+      <div class="sidebar-user"><div class="user-avatar">DC</div><div><strong>Demo Coordinator</strong><span>Simulation access</span></div><span class="user-more">⋯</span></div>
+    </aside>
+    <div class="main-wrap">
+      <header class="topbar"><button type="button" class="mobile-menu" id="mobile-menu" aria-label="Toggle menu">☰</button><div class="breadcrumb">OrganBridge <span>/</span> <b id="crumb">Overview</b></div><div class="top-actions"><span class="live-dot"></span><span class="system-label">Demo environment</span><div class="top-divider"></div><div class="simulation-pill"><span class="sim-dot"></span>SYNTHETIC DATA</div><div id="account-controls"><button class="btn btn-primary" id="open-login">Login</button></div></div></header>
+      <main id="view" class="content" aria-live="polite"><div class="loading">Preparing coordination workspace…</div></main>
+      <footer class="footer"><span>OrganBridge v0.1 • Educational prototype</span><span>Not a medical device · Not for real-world allocation</span></footer>
+    </div>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/roles.js" defer></script>
+  <script src="/hospitals.js" defer></script>
+  <script src="/hospital-suggestions.js" defer></script>
+  <script src="/login.js" defer></script>
+  <script src="/dashboard.js" defer></script>
+  <script src="/staff.js" defer></script>
+  <script src="/requests.js" defer></script>
+  <script src="/live-requests.js" defer></script>
+  <script src="/app.js" defer></script>
+</body>
+</html>
