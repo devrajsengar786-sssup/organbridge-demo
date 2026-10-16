@@ -2,6 +2,12 @@
 
 An educational organ-coordination prototype with a public Madhya Pradesh facility directory and synthetic clinical scenarios. **Not a clinically validated allocation service. Do not enter real patient or donor information.**
 
+## Live demo
+
+[Open OrganBridge on Streamlit](https://organbridge-demo.streamlit.app/)
+
+The hosted demo uses synthetic, temporary browser-session records. Existing staff/admin credentials are configured through private Streamlit secrets. See [Streamlit deployment](DEPLOY_STREAMLIT.md).
+
 ## Run locally
 
 Requires Node.js 18 or newer. No external JavaScript packages are required.
