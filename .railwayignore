@@ -1,0 +1,8 @@
+.git/
+node_modules/
+.env
+.env.*
+LOGIN-CREDENTIALS.txt
+data/auth-accounts.json
+data/demo-db.json
+hospital-sources/

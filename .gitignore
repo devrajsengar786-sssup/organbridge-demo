@@ -1,0 +1,10 @@
+node_modules/
+.DS_Store
+.env
+data/demo-db.json
+
+data/auth-accounts.json
+LOGIN-CREDENTIALS.txt
+
+hospital-sources/
+.env.*
