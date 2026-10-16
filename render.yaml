@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: organbridge-demo
+    runtime: node
+    plan: free
+    buildCommand: npm test
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: PUBLIC_DEMO
+        value: "1"
+      - key: ORGANBRIDGE_ACCOUNTS_JSON
+        sync: false
