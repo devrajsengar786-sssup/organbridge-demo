@@ -1,0 +1,15 @@
+'use strict';
+let liveRequestsChecked=null,liveRequestsFailed=false,liveRequestsBusy=false;
+function liveRequestsPanel(){return `<section class="card card-pad" id="live-requests-panel" style="margin-bottom:20px">${liveRequestsContent()}</section>`;}
+function liveRequestsContent(){
+ const all=cityRequests(),active=all.filter(r=>!['CLOSED','CANCELLED'].includes(r.status));
+ const rows=[...active].sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt));
+ const metrics=[['Active',active.length],['Submitted',active.filter(r=>r.status==='SUBMITTED').length],['In progress',active.filter(r=>r.status!=='SUBMITTED').length],['Closed / cancelled',all.length-active.length]];
+ return `<div class="card-header"><div><h2>Live demo requests ${currentRole==='staff'?'· '+e(staffCity):'· all cities'}</h2><p>Active requests and implementation status · auto-check every 10 seconds</p></div><button class="btn btn-outline btn-sm" id="live-requests-refresh">↻ Update feed</button></div><div class="live-request-metrics">${metrics.map(([label,count])=>`<div><strong>${count}</strong><span>${label}</span></div>`).join('')}</div><div class="table-wrap"><table class="data-table"><thead><tr><th>Request</th><th>Organ</th><th>City</th><th>Current status</th><th>Latest update</th><th>Updated</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${e(r.id)}</b></td><td>${e(r.organ)}</td><td>${e(r.city)}</td><td>${badge(requestLabels[r.status]||r.status,'blue')}</td><td class="live-request-message">${e(r.history.at(-1)?.message||'No update yet')}</td><td>${e(asDate(r.updatedAt))}</td></tr>`).join('')||'<tr><td colspan="6">No active demo requests in this view. Newly submitted requests will appear here.</td></tr>'}</tbody></table></div><div class="dashboard-context"><span id="live-request-check" role="status">${liveRequestsFailed?'Connection unavailable — showing last loaded data. Retry Update feed.':liveRequestsChecked?'Last checked '+e(new Date(liveRequestsChecked).toLocaleTimeString('en-IN')):'Showing latest loaded session data'}</span>${currentRole==='staff'?'<button class="btn-text" data-route="requests">Manage city requests →</button>':'<span>Administrator supervision · read-only</span>'}</div><p class="tiny muted">Synthetic browser-session requests only. In progress means administrative follow-up, not organ allocation or a procedure underway. Dashboard record filters do not change this feed.</p>`;
+}
+async function updateLiveRequests(){
+ if(liveRequestsBusy)return;liveRequestsBusy=true;
+ try{const result=await api('/requests');state.requests=result.requests;liveRequestsChecked=new Date().toISOString();liveRequestsFailed=false;}catch{liveRequestsFailed=true;}finally{liveRequestsBusy=false;const panel=document.querySelector('#live-requests-panel');if(panel)panel.innerHTML=liveRequestsContent();}
+}
+document.addEventListener('click',ev=>{if(ev.target.closest('#live-requests-refresh'))updateLiveRequests();});
+setInterval(()=>{if(!document.hidden&&document.querySelector('#live-requests-panel'))updateLiveRequests();},10000);
