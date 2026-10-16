@@ -8,3 +8,7 @@ LOGIN-CREDENTIALS.txt
 
 hospital-sources/
 .env.*
+
+.streamlit/secrets.toml
+__pycache__/
+*.pyc
