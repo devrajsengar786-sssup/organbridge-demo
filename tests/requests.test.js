@@ -1,0 +1,42 @@
+'use strict';
+process.env.PUBLIC_DEMO='1';
+const test=require('node:test'),assert=require('node:assert/strict');
+const {client}=require('./client');
+const {server}=require('../server');
+test('synthetic requests validate inputs, isolate sessions, track updates and reset',async()=>{
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ const base=`http://127.0.0.1:${server.address().port}`;
+ const session=client(base),otherSession=client(base),cookie='a',otherCookie='b';
+ const call=(url,jar,method='GET',body)=>(jar==='b'?otherSession:session).call(url,method,body);
+ try{
+  await session.login('visitor');await otherSession.login('visitor');
+  const input={organ:'Kidney',bloodGroup:'O+',city:'Bhopal',syntheticOnly:true};
+  assert.equal((await call('/requests',cookie,'POST',{...input,patientName:'Not accepted'})).status,400);
+  assert.equal((await call('/requests',cookie,'POST',{...input,syntheticOnly:false})).status,400);
+  const res=await call('/requests',cookie,'POST',input);assert.equal(res.status,201);const entry=(await res.json()).request;assert.equal(entry.status,'SUBMITTED');
+  assert.equal((await(await otherSession.call('/requests')).json()).requests.length,0);
+  await session.login();await otherSession.login();
+  assert.equal((await call('/requests/'+entry.id,otherCookie,'PATCH',{status:'IN_REVIEW'})).status,404);
+  assert.equal((await call('/requests/'+entry.id,cookie,'PATCH',{status:'ORGAN_ALLOCATED'})).status,400);
+  const updated=await call('/requests/'+entry.id,cookie,'PATCH',{status:'IN_REVIEW'});assert.equal(updated.status,200);assert.equal((await updated.json()).request.history.length,2);
+  await call('/requests/'+entry.id,cookie,'PATCH',{status:'IN_REVIEW'});assert.equal((await(await call('/requests',cookie)).json()).requests[0].history.length,2);
+  assert.equal((await call('/availability',cookie,'PATCH',{organ:'Kidney',count:-1})).status,400);
+  assert.equal((await call('/availability',cookie,'PATCH',{organ:'Kidney',count:3})).status,200);
+  assert.equal((await(await call('/availability',otherCookie)).json()).availability[0].count,0);
+  assert.equal((await call('/appointments',cookie,'POST',{requestId:entry.id,time:'invalid'})).status,400);
+  const appointment=await call('/appointments',cookie,'POST',{requestId:entry.id,staffTo:'lab',time:new Date(Date.now()+86400000).toISOString()});assert.equal(appointment.status,201);assert.equal((await appointment.json()).appointment.audience,'STAFF_ONLY');
+  assert.equal((await(await call('/appointments',otherCookie)).json()).appointments.length,0);
+  assert.equal((await call('/appointments',cookie,'POST',{requestId:entry.id,staffTo:'lab',time:new Date(Date.now()+86400000).toISOString()})).status,409);
+  await session.login('visitor');
+  const second=(await(await call('/requests',cookie,'POST',input)).json()).request;
+  await session.login();
+  const secondAppointment=(await(await call('/appointments',cookie,'POST',{requestId:second.id,staffTo:'lab',time:new Date(Date.now()+86400000).toISOString()})).json()).appointment;
+  assert.equal((await call('/requests/'+second.id,cookie,'PATCH',{status:'CANCELLED'})).status,200);
+  assert.equal((await(await call('/appointments',cookie)).json()).appointments.find(a=>a.id===secondAppointment.id).status,'CANCELLED');
+  assert.equal((await call('/requests/'+second.id,cookie,'PATCH',{status:'IN_REVIEW'})).status,409);
+  await call('/requests/'+entry.id,cookie,'PATCH',{status:'CLOSED'});assert.equal((await call('/requests/'+entry.id,cookie,'PATCH',{status:'FOLLOW_UP'})).status,409);
+  const audit=await(await call('/audit',cookie)).json();assert.ok(audit.audit.some(a=>a.action==='DEMO_REQUEST_UPDATED'));
+  await session.login('admin');
+  await call('/reset',cookie,'POST',{});assert.equal((await(await call('/requests',cookie)).json()).requests.length,0);
+ }finally{await new Promise(resolve=>server.close(resolve));}
+});
